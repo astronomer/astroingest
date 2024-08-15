@@ -11,6 +11,7 @@ x-airflow-common: &airflow-common
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:pg_password@postgres:5432/airflow
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+    AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS: 'False'
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'True'
     AIRFLOW__WEBSERVER__SECRET_KEY: 'cosmos'
     AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: '5'
@@ -97,6 +98,7 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+  # Initialize the database and two connections for testing
   airflow-triggerer:
     <<: *airflow-common
     command: airflow triggerer
@@ -123,11 +125,29 @@ services:
       - -c
       - |
         exec /entrypoint bash -c "
-          airflow db upgrade && \
+          airflow db migrate && \
           airflow version"
     # yamllint enable rule:line-length
     environment:
       <<: *airflow-common-env
+
+  airflow-add-connections:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    # yamllint disable rule:line-length
+    command:
+      - -c
+      - |
+        exec /entrypoint bash -c "
+          airflow users create -r Admin -u admin -e admin -f admin -l admin -p admin && \
+          airflow connections add 'postgres' --conn-type 'postgres' --conn-login 'airflow' --conn-password 'pg_password' --conn-host 'postgres' --conn-port '5432' --conn-schema 'airflow' && \
+          airflow connections add 'mysql' --conn-type 'mysql' --conn-login 'airflow' --conn-password 'mysql_password' --conn-host 'mysql' --conn-port '3306' --conn-schema 'airflow'"
+    # yamllint enable rule:line-length
+    environment:
+      <<: *airflow-common-env
+    depends_on:
+      airflow-scheduler: # Wait to successfully load scheduler healthy so we can add connections
+        condition: service_healthy
 
 volumes:
   postgres-db-volume:
