@@ -7,7 +7,6 @@ RUN pip install -U uv
 COPY ./pyproject.toml  ${AIRFLOW_HOME}/astroingest/
 COPY ./README.md  ${AIRFLOW_HOME}/astroingest/
 COPY ./src/  ${AIRFLOW_HOME}/astroingest/src/
-# COPY ./dev/requirements.txt ${AIRFLOW_HOME}/requirements.txt
 
 # Bring in the standard Astro project files
 COPY ./dev/ ${AIRFLOW_HOME}/
@@ -22,3 +21,4 @@ RUN chown -R astro:astro ${AIRFLOW_HOME}/astroingest
 USER astro
 
 ENV AIRFLOW_CONN_AIRFLOW_DB=postgres://airflow:pg_password@postgres:5432/airflow
+ENV MYSQL_DB=mysql://airflow:mysql_password@mysql:3306/airflow
