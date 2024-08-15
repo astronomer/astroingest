@@ -1,15 +1,16 @@
-FROM quay.io/astronomer/astro-runtime:11.7.0-base
+FROM quay.io/astronomer/astro-runtime:11.9.0-base
 
 USER root
 
 RUN pip install -U uv
 
-COPY ./README.md ${AIRFLOW_HOME}/astroingest/
 COPY ./pyproject.toml  ${AIRFLOW_HOME}/astroingest/
-COPY ./src/astroingest/  ${AIRFLOW_HOME}/src/astroingest/
-COPY ./dev/requirements.txt ${AIRFLOW_HOME}/requirements.txt
-COPY ./dev/packages.txt ${AIRFLOW_HOME}/packages.txt
+COPY ./README.md  ${AIRFLOW_HOME}/astroingest/
+COPY ./src/  ${AIRFLOW_HOME}/astroingest/src/
+# COPY ./dev/requirements.txt ${AIRFLOW_HOME}/requirements.txt
 
+# Bring in the standard Astro project files
+COPY ./dev/ ${AIRFLOW_HOME}/
 
 # install the package in editable mode
 RUN uv pip install --system -e "${AIRFLOW_HOME}/astroingest" && \

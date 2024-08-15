@@ -1,8 +1,14 @@
 # astroingest
 
-Describe your project here.
-
 This project uses (Rye)[https://github.com/astral-sh/rye], learn how to set this up.
+
+# Contributing
+
+Use Docker Compose to check that your changes work in an actual Airflow runtime environment. To spin this up, run the following in this directory:
+
+`docker compose -f dev/docker-compose.yml up -d --build`
+
+# Project Plan
 
 The project will have the following structure:
 
