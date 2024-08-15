@@ -8,3 +8,6 @@ wheels/
 .DS_Store
 # venv
 .venv
+
+# dev
+dev/logs/*

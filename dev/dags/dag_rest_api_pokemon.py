@@ -23,7 +23,7 @@ default_task_args = {
     max_active_runs=1,
     default_args=default_task_args,
 )
-def load_data():
+def original_load_data():
     """
     This DAG is used to load data from the Pokemon API into a Postgres database with postgres schema `pokemon`.
     """
@@ -40,7 +40,7 @@ def load_data():
         pipeline_name="rest_api_pipeline_pokemon",
         dataset_name="pokemon",
         destination=dlt.destinations.postgres(
-            "postgres://postgres:postgres@postgres:5432/postgres"
+            "postgres://airflow:pg_password@postgres:5432/airflow"
         ),
         full_refresh=False,  # must be false if we decompose
     )
@@ -55,4 +55,4 @@ def load_data():
     )
 
 
-load_data()
+original_load_data()

@@ -3,6 +3,7 @@ from airflow.decorators import dag
 
 import dlt
 from dlt.common import pendulum
+from airflow.operators.empty import EmptyOperator
 
 from astroingest.dlt_pipeline_task_group import DltPipelineTaskGroup
 
@@ -24,22 +25,28 @@ default_task_args = {
     max_active_runs=1,
     default_args=default_task_args,
 )
-def load_data():
+def astroingest_load_data():
     """
     Same as the dag_rest_api_pokemon DAG, but written with DltPipelineTaskGroup to abstract the dlt pipeline creation.
     """
     from include.rest_api import pokemon_source
 
+    pre_dlt = EmptyOperator(task_id="pre_dlt")
+
     dlt_task_group = DltPipelineTaskGroup(
-        pipeline_name="rest_api_pipeline_pokemon",
-        dlt_source=pokemon_source,
+        pipeline_name="astroingest_rest_api_pipeline_pokemon",
+        dlt_source=pokemon_source(),
         dataset_name="pokemon",
-        destination=dlt.destinations.postgres("postgres://postgres:postgres@postgres:5432/postgres"),
+        destination=dlt.destinations.postgres(
+            "postgres://airflow:pg_password@postgres:5432/airflow"
+        ),
         use_data_folder=False,
         wipe_local_data=True,
     )
-    
-    dlt_task_group()
-    
 
-load_data()
+    post_dlt = EmptyOperator(task_id="post_dlt")
+
+    pre_dlt >> dlt_task_group >> post_dlt
+
+
+astroingest_load_data()
