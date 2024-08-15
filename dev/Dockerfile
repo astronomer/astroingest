@@ -18,4 +18,6 @@ RUN uv pip install --system -e "${AIRFLOW_HOME}/astroingest" && \
 # make sure astro user owns the package
 RUN chown -R astro:astro ${AIRFLOW_HOME}/astroingest
 
+USER astro
+
 ENV AIRFLOW_CONN_AIRFLOW_DB=postgres://airflow:pg_password@postgres:5432/airflow
