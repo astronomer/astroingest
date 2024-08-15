@@ -47,7 +47,9 @@ def load_data():
     pipeline = dlt.pipeline(
         pipeline_name="rest_api_pipeline_pokemon",
         dataset_name="dataset_name",
-        destination="duckdb",
+        destination=dlt.destinations.postgres(
+            "postgres://postgres:postgres@postgres:5432/postgres"
+        ),
         full_refresh=False,  # must be false if we decompose
     )
     # create the source, the "serialize" decompose option will converts dlt resources into Airflow tasks. use "none" to disable it
