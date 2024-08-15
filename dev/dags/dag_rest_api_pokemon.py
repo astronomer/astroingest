@@ -46,7 +46,7 @@ def load_data():
     # modify the pipeline parameters
     pipeline = dlt.pipeline(
         pipeline_name="rest_api_pipeline_pokemon",
-        dataset_name="dataset_name",
+        dataset_name="pokemon",
         destination=dlt.destinations.postgres(
             "postgres://postgres:postgres@postgres:5432/postgres"
         ),
