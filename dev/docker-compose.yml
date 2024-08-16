@@ -64,6 +64,21 @@ services:
       - mysql-db-volume:/var/lib/mysql # Persistent storage for MySQL data
     restart: always
 
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    ports:
+      - '8123:8123' # HTTP interface
+      - '9000:9000' # Native client interface
+      - '9009:9009' # TCP port for inter-server communication
+    volumes:
+      - clickhouse-db-volume:/var/lib/clickhouse # Persistent storage for ClickHouse data
+    environment:
+      - CLICKHOUSE_DB=airflow # Optional: Pre-create a database
+      - CLICKHOUSE_USER=airflow # Optional: Set default user (default is 'default')
+      - CLICKHOUSE_PASSWORD=clickhouse_password # Optional: Set default user password (default is empty)
+    restart: always
+
   airflow-webserver:
     <<: *airflow-common
     command: airflow webserver
@@ -141,6 +156,7 @@ services:
         exec /entrypoint bash -c "
           airflow users create -r Admin -u admin -e admin -f admin -l admin -p admin && \
           airflow connections add 'postgres' --conn-type 'postgres' --conn-login 'airflow' --conn-password 'pg_password' --conn-host 'postgres' --conn-port '5432' --conn-schema 'airflow' && \
+          airflow connections add 'clickhouse' --conn-type 'clickhouse' --conn-login 'airflow' --conn-password 'clickhouse_password' --conn-host 'clickhouse' --conn-port '8123' --conn-schema 'airflow'"
           airflow connections add 'mysql' --conn-type 'mysql' --conn-login 'airflow' --conn-password 'mysql_password' --conn-host 'mysql' --conn-port '3306' --conn-schema 'airflow'"
     # yamllint enable rule:line-length
     environment:
@@ -152,3 +168,4 @@ services:
 volumes:
   postgres-db-volume:
   mysql-db-volume:
+  clickhouse-db-volume:

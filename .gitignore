@@ -11,3 +11,4 @@ wheels/
 
 # dev
 dev/logs/*
+dev/volume/*
