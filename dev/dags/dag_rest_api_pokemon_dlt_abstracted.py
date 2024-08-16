@@ -30,41 +30,42 @@ def astroingest_load_data():
     """
     Same as the dag_rest_api_pokemon DAG, but written with DltPipelineTaskGroup to abstract the dlt pipeline creation.
     """
-    from include.rest_api import pokemon_source
+    from include.rest_api import pokemon_source as api_source
     from include.sql_database import sql_database
+
+    mysql_source = sql_database(
+        ConnectionStringCredentials(
+            "mysql://airflow:mysql_password@mysql:3306/airflow"
+        ),
+        "airflow",
+    )
+    postgres_destination = dlt.destinations.postgres(
+        "postgres://airflow:pg_password@postgres:5432/airflow"
+    )
 
     pre_dlt = EmptyOperator(task_id="pre_dlt")
 
-    dlt_task_group_pg = DltPipelineTaskGroup(
-        pipeline_name="astroingest_postgres_rest_api_pipeline_pokemon",
-        dlt_source=pokemon_source(),
+    dlt_task_group_api_pg = DltPipelineTaskGroup(
+        pipeline_name="astroingest_api_postgres_pipeline",
+        dlt_source=api_source(),
         dataset_name="pokemon",
-        destination=dlt.destinations.postgres(
-            "postgres://airflow:pg_password@postgres:5432/airflow"
-        ),
+        destination=postgres_destination,
         use_data_folder=False,
         wipe_local_data=True,
     )
 
-    credentials = ConnectionStringCredentials(
-        "postgresql://airflow:pg_password@postgres:5432/airflow"
-    )
-    postgres_source = sql_database(credentials, "pokemon").with_resources("pokemon")
-
-    dlt_task_group_clickhouse = DltPipelineTaskGroup(
-        pipeline_name="astroingest_clickhouse_rest_api_pipeline_pokemon",
-        dlt_source=postgres_source,
-        dataset_name="pokemon",
-        destination=dlt.destinations.clickhouse(
-            "http://airflow:clickhouse_password@clickhouse:9000/airflow?secure=0"
-        ),
+    dlt_task_group_mysql_pg = DltPipelineTaskGroup(
+        pipeline_name="astroingest_mysql_postgres_pipeline",
+        dlt_source=mysql_source,
+        dataset_name="mysql_source",
+        destination=postgres_destination,
         use_data_folder=False,
         wipe_local_data=True,
     )
 
     post_dlt = EmptyOperator(task_id="post_dlt")
 
-    (pre_dlt >> dlt_task_group_pg >> dlt_task_group_clickhouse >> post_dlt)
+    (pre_dlt >> dlt_task_group_api_pg >> dlt_task_group_mysql_pg >> post_dlt)
 
 
 astroingest_load_data()

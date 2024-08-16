@@ -62,6 +62,7 @@ services:
       MYSQL_PASSWORD: mysql_password # Optional: Password for the new user
     volumes:
       - mysql-db-volume:/var/lib/mysql # Persistent storage for MySQL data
+      - './seeds/mysql.sql:/docker-entrypoint-initdb.d/1.sql'
     restart: always
 
   clickhouse:
